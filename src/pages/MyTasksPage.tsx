@@ -35,7 +35,6 @@ export const MyTasksPage: React.FC = () => {
         `)
         .order('created_at', { ascending: false });
 
-      // Если исполнитель — фильтруем по worker_id
       if (!isManager) {
         query = query.eq('worker_id', user.id);
       }

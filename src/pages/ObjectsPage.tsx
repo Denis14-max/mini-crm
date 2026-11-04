@@ -211,7 +211,6 @@ export const ObjectsPage: React.FC = () => {
         </Row>
       )}
 
-      {/* Модальное окно создания объекта (для постановщика) */}
       <Modal
         title="Добавление строительного объекта"
         open={isModalOpen}

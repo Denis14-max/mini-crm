@@ -44,7 +44,6 @@ export const TaskDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Для модального окна "Вернуть на доработку" с обязательным комментарием
   const [isReworkModalOpen, setIsReworkModalOpen] = useState(false);
   const [reworkComment, setReworkComment] = useState('');
   const [reworkError, setReworkError] = useState<string | null>(null);
@@ -56,7 +55,6 @@ export const TaskDetailPage: React.FC = () => {
     if (!id) return;
     setLoading(true);
     try {
-      // 1. Загрузка задачи
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
         .select('*')
@@ -69,7 +67,6 @@ export const TaskDetailPage: React.FC = () => {
       }
       setTask(taskData);
 
-      // 2. Загрузка объекта, к которому привязана задача
       if (taskData.object_id) {
         const { data: objData } = await supabase
           .from('objects')
@@ -79,7 +76,6 @@ export const TaskDetailPage: React.FC = () => {
         setObjectData(objData);
       }
 
-      // 3. Загрузка истории изменений задачи
       const { data: histData, error: histError } = await supabase
         .from('task_history')
         .select('*')
@@ -87,7 +83,7 @@ export const TaskDetailPage: React.FC = () => {
         .order('changed_at', { ascending: false });
 
       if (histError) {
-        console.error('Ошибка истории:', histError);
+        console.error(histError);
       } else {
         setHistory(histData || []);
       }
@@ -102,7 +98,6 @@ export const TaskDetailPage: React.FC = () => {
     loadTaskData();
   }, [id, user]);
 
-  // Функция смены статуса задачи
   const handleStatusChange = async (newStatus: TaskStatus, comment?: string) => {
     if (!task) return;
     setActionLoading(true);
@@ -139,7 +134,7 @@ export const TaskDetailPage: React.FC = () => {
 
   const submitRework = () => {
     if (!reworkComment.trim()) {
-      setReworkError('По ТЗ комментарий обязателен при возврате на доработку!');
+      setReworkError('Комментарий обязателен при возврате на доработку');
       return;
     }
     handleStatusChange('На доработке', reworkComment);
@@ -222,13 +217,11 @@ export const TaskDetailPage: React.FC = () => {
             </Title>
           </div>
 
-          {/* ПАНЕЛЬ ДОСТУПНЫХ ДЕЙСТВИЙ (СТРОГО ПО ТЗ) */}
           <div style={{ background: '#fafafa', padding: '12px 16px', borderRadius: 8, border: '1px solid #f0f0f0' }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: '#8c8c8c', marginBottom: 8, textTransform: 'uppercase' }}>
               Доступные действия
             </div>
             <Space wrap>
-              {/* 1. Новая -> В работе (Исполнитель) */}
               {task.status === 'Новая' && isAssignedWorker && (
                 <Button
                   type="primary"
@@ -240,7 +233,6 @@ export const TaskDetailPage: React.FC = () => {
                 </Button>
               )}
 
-              {/* 2. В работе -> На проверке (Исполнитель) */}
               {task.status === 'В работе' && isAssignedWorker && (
                 <Button
                   type="primary"
@@ -252,7 +244,6 @@ export const TaskDetailPage: React.FC = () => {
                 </Button>
               )}
 
-              {/* 3. На проверке -> Принята (Постановщик) */}
               {task.status === 'На проверке' && isManager && (
                 <Button
                   type="primary"
@@ -265,7 +256,6 @@ export const TaskDetailPage: React.FC = () => {
                 </Button>
               )}
 
-              {/* 4. На проверке -> На доработке (Постановщик с обязательным комментарием) */}
               {task.status === 'На проверке' && isManager && (
                 <Button
                   danger
@@ -277,7 +267,6 @@ export const TaskDetailPage: React.FC = () => {
                 </Button>
               )}
 
-              {/* 5. На доработке -> В работе (Исполнитель) */}
               {task.status === 'На доработке' && isAssignedWorker && (
                 <Button
                   type="primary"
@@ -289,7 +278,6 @@ export const TaskDetailPage: React.FC = () => {
                 </Button>
               )}
 
-              {/* Если действий для текущей роли и статуса нет */}
               {((task.status === 'Новая' && !isAssignedWorker) ||
                 (task.status === 'В работе' && !isAssignedWorker) ||
                 (task.status === 'На проверке' && !isManager) ||
@@ -297,7 +285,7 @@ export const TaskDetailPage: React.FC = () => {
                 task.status === 'Принята') && (
                 <Text type="secondary" style={{ fontStyle: 'italic', fontSize: 13 }}>
                   {task.status === 'Принята'
-                    ? '🎉 Задача успешно завершена и принята'
+                    ? 'Задача успешно завершена и принята'
                     : isManager
                     ? 'Ожидается действие исполнителя'
                     : 'Ожидается проверка постановщиком'}
@@ -340,7 +328,6 @@ export const TaskDetailPage: React.FC = () => {
         </Descriptions>
       </Card>
 
-      {/* ТАЙМЛАЙН ИСТОРИИ ИЗМЕНЕНИЙ (ТРЕБОВАНИЕ ТЗ 2.4) */}
       <Card
         title={
           <Space>
@@ -416,7 +403,6 @@ export const TaskDetailPage: React.FC = () => {
         )}
       </Card>
 
-      {/* МОДАЛЬНОЕ ОКНО ДЛЯ ОБЯЗАТЕЛЬНОГО КОММЕНТАРИЯ ПРИ ВОЗВРАТЕ НА ДОРАБОТКУ */}
       <Modal
         title="Возврат задачи на доработку"
         open={isReworkModalOpen}
@@ -431,7 +417,7 @@ export const TaskDetailPage: React.FC = () => {
         cancelText="Отмена"
       >
         <Alert
-          message="Внимание: по регламенту ТЗ комментарий обязателен"
+          message="Внимание"
           description="Укажите исполнителю, что именно необходимо исправить или переделать."
           type="warning"
           showIcon
@@ -440,7 +426,7 @@ export const TaskDetailPage: React.FC = () => {
 
         <Form layout="vertical">
           <Form.Item
-            label="Причина возврата / Что доделать"
+            label="Причина возврата"
             required
             validateStatus={reworkError ? 'error' : ''}
             help={reworkError}
@@ -452,7 +438,7 @@ export const TaskDetailPage: React.FC = () => {
                 setReworkComment(e.target.value);
                 if (reworkError) setReworkError(null);
               }}
-              placeholder="Например: Не заделаны стыки перекрытий на 2 этаже. Переделать согласно нормам."
+              placeholder="Опишите необходимые исправления..."
             />
           </Form.Item>
         </Form>

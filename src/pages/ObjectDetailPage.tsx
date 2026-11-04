@@ -52,7 +52,6 @@ export const ObjectDetailPage: React.FC = () => {
     if (!id) return;
     setLoading(true);
     try {
-      // 1. Загрузка данных объекта
       const { data: objData, error: objError } = await supabase
         .from('objects')
         .select('*')
@@ -65,7 +64,6 @@ export const ObjectDetailPage: React.FC = () => {
       }
       setObjectData(objData);
 
-      // 2. Загрузка задач по этому объекту
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
         .select('*')
@@ -78,7 +76,6 @@ export const ObjectDetailPage: React.FC = () => {
         setTasks(tasksData || []);
       }
 
-      // 3. Если постановщик — загружаем список исполнителей для выпадающего списка
       if (isManager) {
         const { data: workersData } = await supabase
           .from('user_roles')
@@ -331,7 +328,6 @@ export const ObjectDetailPage: React.FC = () => {
         />
       </Card>
 
-      {/* Модальное окно создания задачи (для постановщика) */}
       <Modal
         title="Создание задачи по объекту"
         open={isTaskModalOpen}
@@ -356,7 +352,7 @@ export const ObjectDetailPage: React.FC = () => {
             <Input placeholder="Например: Залить фундамент 2-й очереди" />
           </Form.Item>
 
-          <Form.Item name="description" label="Описание / ТЗ">
+          <Form.Item name="description" label="Описание">
             <TextArea
               rows={4}
               placeholder="Подробности задачи, материалы, требования..."
